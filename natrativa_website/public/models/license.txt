@@ -1,0 +1,11 @@
+Model Information:
+* title:	Sweater Pack
+* source:	https://sketchfab.com/3d-models/sweater-pack-50fc69ff7a9a4f91ad721b44e898772d
+* author:	MadeByYeshe (https://sketchfab.com/MadeByYeshe)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Sweater Pack" (https://sketchfab.com/3d-models/sweater-pack-50fc69ff7a9a4f91ad721b44e898772d) by MadeByYeshe (https://sketchfab.com/MadeByYeshe) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
