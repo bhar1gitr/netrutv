@@ -7,8 +7,11 @@ import axios from "axios"
 import { Box, ShoppingBag, ArrowLeft, Loader2 } from "lucide-react"
 import Link from "next/link"
 
-const API_URL = "http://localhost:5000/api/products"
-const IMG_BASE_URL = "http://localhost:5000/"
+// const API_URL = "http://localhost:5000/api/products"
+// const IMG_BASE_URL = "http://localhost:5000/"
+
+const API_URL = "https://netrutv-server.onrender.com/api/products"
+const IMG_BASE_URL = "https://netrutv-server.onrender.com/"
 
 export default function ProductDetails() {
   const { id } = useParams() // This gets the MongoDB _id from the URL
