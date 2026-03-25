@@ -4,6 +4,8 @@ import { useCart } from "@/context/cart-context"
 import { X, Plus, Minus, Trash2 } from "lucide-react"
 
 export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const BASE_URL = "https://netrutv-server.onrender.com";
+
   const { items, removeFromCart, updateQuantity, total, clearCart } = useCart()
 
   const handleCheckout = () => {
@@ -21,10 +23,10 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
 
     // 2. Create the Premium Concierge Message
     const message = `Greetings NETRUTV Concierge. I would like to finalize my collection:\n\n${cartSummary}\n\n*Total Value: ${total}*`
-    
+
     // 3. TARGET NUMBER: 917039674351
     window.open(`https://wa.me/917039674351?text=${encodeURIComponent(message)}`, "_blank")
-    
+
     // 4. Clear the cart and close the sidebar
     clearCart()
     onClose()
@@ -33,14 +35,14 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
   return (
     <>
       {/* Overlay Backdrop */}
-      <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
-        onClick={onClose} 
+      <div
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
       />
 
       {/* Sidebar Panel */}
       <div className={`fixed right-0 top-0 h-full w-full sm:w-[450px] bg-[#050505] z-[70] shadow-2xl border-l border-[#d4af37]/20 transform transition-transform duration-700 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        
+
         {/* Header */}
         <div className="p-8 border-b border-zinc-900 flex justify-between items-start">
           <div>
@@ -65,9 +67,14 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
             items.map((item) => (
               <div key={item.id} className="flex gap-6 group">
                 <div className="relative w-20 h-24 bg-zinc-950 border border-zinc-900 overflow-hidden">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500" />
+                  {/* <img src={item.image} alt={item.name} className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500" /> */}
+                  <img
+                    src={item.image.startsWith('http') ? item.image : `${BASE_URL}${item.image}`}
+                    alt={item.name}
+                    className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-500"
+                  />
                 </div>
-                
+
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-start">
                     <h3 className="text-xs font-bold text-zinc-300 tracking-wider uppercase">{item.name}</h3>
@@ -76,12 +83,12 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
                     </button>
                   </div>
                   <p className="text-[#d4af37] font-playfair italic text-lg">{item.price}</p>
-                  
+
                   <div className="flex items-center gap-4 mt-4">
                     <div className="flex items-center border border-zinc-800 rounded-sm bg-black">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-3 py-1 text-zinc-500 hover:text-white transition-colors"><Minus size={12}/></button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-3 py-1 text-zinc-500 hover:text-white transition-colors"><Minus size={12} /></button>
                       <span className="px-2 text-[10px] font-bold text-white tabular-nums">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-3 py-1 text-zinc-500 hover:text-white transition-colors"><Plus size={12}/></button>
+                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-3 py-1 text-zinc-500 hover:text-white transition-colors"><Plus size={12} /></button>
                     </div>
                   </div>
                 </div>
@@ -97,8 +104,8 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
               <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 font-bold">Subtotal Value</span>
               <span className="text-2xl font-playfair text-[#d4af37]">{total}</span>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleCheckout}
               className="w-full bg-[#d4af37] text-black py-5 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all duration-500 shadow-[0_10px_30px_rgba(212,175,55,0.1)]"
             >
