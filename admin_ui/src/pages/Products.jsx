@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Image as ImageIcon, Box, Upload, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = "http://localhost:5000/api/products";
-const IMG_BASE_URL = "http://localhost:5000/";
+// const API_URL = "http://localhost:5000/api/products";
+// const IMG_BASE_URL = "http://localhost:5000/";
+
+const API_URL = "https://netrutv-server.onrender.com/api/products"
+const IMG_BASE_URL = "https://netrutv-server.onrender.com/"
 
 const CATEGORY_MAP = {
   tshirts: ["Round Neck", "Polo", "Dry Fit", "Oversize Graphic", "Long Sleeve", "Sports", "Hoodie", "Stripped", "Henley", "Sleeve Less", "Drop Sholder", "Puff Print"],
