@@ -6,8 +6,11 @@ import { useCart } from "@/context/cart-context"
 import axios from "axios"
 import { Search, Box, AlertTriangle, X, ShoppingBag } from "lucide-react"
 
-const API_URL = "http://localhost:5000/api/products"
-const IMG_BASE_URL = "http://localhost:5000/"
+// const API_URL = "http://localhost:5000/api/products"
+// const IMG_BASE_URL = "http://localhost:5000/"
+
+const API_URL = "https://netrutv-server.onrender.com/api/products"
+const IMG_BASE_URL = "https://netrutv-server.onrender.com/"
 
 export default function CollectionsPage() {
   const { addToCart } = useCart()

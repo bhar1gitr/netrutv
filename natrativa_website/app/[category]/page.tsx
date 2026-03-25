@@ -14,7 +14,8 @@ export default function CategoryPage() {
   const [activeSub, setActiveSub] = useState("All")
   const [loading, setLoading] = useState(true)
 
-  const API_BASE_URL = "http://localhost:5000";
+  // const API_BASE_URL = "http://localhost:5000";
+    const API_BASE_URL = "https://netrutv-server.onrender.com";
 
   // 1. Fetch data from Backend
   useEffect(() => {
