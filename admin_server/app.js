@@ -7,18 +7,19 @@ require('dotenv').config();
 const productRoutes = require('./routes/productRoutes');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-// Serve the uploads folder statically
+// ✅ Serve uploads folder properly
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Database Connection
+// DB
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to Netrutv DB"))
+  .then(() => console.log("Connected to DB"))
   .catch(err => console.log(err));
 
-// Use Routes
+// Routes
 app.use('/api/products', productRoutes);
 
 const PORT = process.env.PORT || 5000;

@@ -3,10 +3,10 @@ import { Plus, Pencil, Trash2, X, Upload, Loader2, Package } from 'lucide-react'
 import axios from 'axios';
 
 const API_URL = "https://netrutv-server.onrender.com/api/products";
-const IMG_BASE_URL = "https://netrutv-server.onrender.com/";
+const IMG_BASE_URL = "https://netrutv-server.onrender.com";
 
 // const API_URL = "http://localhost:5000/api/products";
-// const IMG_BASE_URL = "http://localhost:5000/";
+// const IMG_BASE_URL = "http://localhost:5000";
 
 const CATEGORY_MAP = {
   tshirts: ["Round Neck", "Polo", "Dry Fit", "Oversize Graphic", "Long Sleeve", "Sports", "Hoodie", "Stripped", "Henley", "Sleeve Less", "Drop Sholder", "Puff Print"],
