@@ -5,10 +5,19 @@ import { useParams } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 import ReviewSection from "@/components/Reviews"
 import axios from "axios"
-import { ShoppingBag, ArrowLeft, Loader2, Star, ShieldCheck, Truck } from "lucide-react"
+import { ShoppingBag, ArrowLeft, Loader2, Star, ShieldCheck, Truck, Tag } from "lucide-react"
 import Link from "next/link"
 
 const API_URL = "https://netrutv-server.onrender.com/api/products"
+
+// Helper to calculate sale price
+const getSalePrice = (price, discount) => {
+  if (!discount) return price;
+  if (discount.discountType === 'percentage') {
+    return price - (price * discount.value / 100);
+  }
+  return price - discount.value;
+};
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -23,6 +32,7 @@ export default function ProductDetails() {
     const fetchProduct = async () => {
       try {
         setLoading(true)
+        // Backend now populates 'discount' in this route
         const res = await axios.get(`${API_URL}/${id}`)
         setProduct(res.data)
         setError(false)
@@ -53,13 +63,16 @@ export default function ProductDetails() {
   )
 
   const isSoldOut = product.totalStock <= 0
+  const hasDiscount = !!product.discount
+  const salePrice = getSalePrice(product.price, product.discount)
 
   const handleAddToCart = () => {
     if (!selectedSize) {
       alert("Please select a size to continue.")
       return
     }
-    addToCart({ ...product, selectedSize })
+    // CRITICAL: Passing the calculated salePrice to the cart
+    addToCart({ ...product, selectedSize, price: salePrice })
   }
 
   return (
@@ -78,6 +91,18 @@ export default function ProductDetails() {
           <div className="lg:col-span-7">
             <div className="sticky top-32 space-y-4">
               <div className="relative group overflow-hidden border border-zinc-900 bg-zinc-950 aspect-[4/5]">
+                {/* DISCOUNT BADGE */}
+                {!isSoldOut && hasDiscount && (
+                  <div className="absolute top-6 left-6 z-20">
+                    <span className="bg-[#d4af37] text-black text-[12px] px-4 py-2 rounded-sm uppercase font-black tracking-tighter shadow-[0_10px_30px_rgba(212,175,55,0.3)] flex items-center gap-2">
+                      <Tag size={14} />
+                      {product.discount.discountType === 'percentage' 
+                        ? `${product.discount.value}% OFF` 
+                        : `₹${product.discount.value} OFF`}
+                    </span>
+                  </div>
+                )}
+
                 <img
                   src={product.image}
                   alt={product.name}
@@ -89,7 +114,7 @@ export default function ProductDetails() {
                   </div>
                 )}
               </div>
-              <p className="text-[8px] text-zinc-600 uppercase tracking-[0.5em] text-center italic">Professional Studio Capture • Limited Edition</p>
+              <p className="text-[8px] text-zinc-600 uppercase tracking-[0.5em] text-center italic">Professional Studio Capture • Limited Edition Archive</p>
             </div>
           </div>
 
@@ -98,15 +123,31 @@ export default function ProductDetails() {
             <header className="mb-12">
               <div className="flex items-center gap-4 mb-6">
                 <span className="h-[1px] w-8 bg-[#d4af37]" />
-                <h3 className="text-[#d4af37] text-[10px] uppercase tracking-[0.5em] font-black">{product.sub || "Core Collection"}</h3>
+                <h3 className="text-[#d4af37] text-[10px] uppercase tracking-[0.5em] font-black">
+                  {product.sub || "Core Collection"} 
+                  {hasDiscount && <span className="ml-3 text-white">/ PROMOTION ACTIVE</span>}
+                </h3>
               </div>
               <h1 className="text-5xl sm:text-7xl font-serif italic tracking-tighter mb-6 leading-tight">{product.name}</h1>
-              <div className="flex items-baseline gap-6">
-                <p className="text-4xl font-light tracking-tighter text-white">₹{Number(product.price).toLocaleString()}</p>
-                {product.rating > 0 && (
-                  <div className="flex items-center gap-2 text-[#d4af37]">
+              
+              <div className="flex flex-col gap-2">
+                <div className="flex items-baseline gap-6">
+                  {hasDiscount && !isSoldOut ? (
+                    <>
+                      <p className="text-5xl font-bold tracking-tighter text-[#d4af37] italic">₹{Number(salePrice).toLocaleString()}</p>
+                      <p className="text-2xl font-light tracking-tighter text-zinc-600 line-through">₹{Number(product.price).toLocaleString()}</p>
+                    </>
+                  ) : (
+                    <p className="text-4xl font-light tracking-tighter text-white">₹{Number(product.price).toLocaleString()}</p>
+                  )}
+                </div>
+                
+                {product.reviews?.length > 0 && (
+                  <div className="flex items-center gap-2 text-[#d4af37] mt-2">
                     <Star size={12} className="fill-[#d4af37]" />
-                    <span className="text-[10px] font-bold tracking-widest">{product.rating.toFixed(1)}</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase opacity-70">
+                      {product.reviews.length} Narrative{product.reviews.length > 1 ? 's' : ''} Shared
+                    </span>
                   </div>
                 )}
               </div>
@@ -160,12 +201,12 @@ export default function ProductDetails() {
               )}
             </div>
 
-            {/* PRODUCT INFO ACCORDION STYLE */}
+            {/* PRODUCT INFO */}
             <div className="space-y-8 border-t border-zinc-900 pt-12">
               <section>
-                <h4 className="text-[10px] uppercase text-[#d4af37] mb-4 tracking-[0.3em] font-bold underline underline-offset-8">The Narrative</h4>
+                <h4 className="text-[10px] uppercase text-[#d4af37] mb-4 tracking-[0.3em] font-bold underline underline-offset-8 decoration-1">The Narrative</h4>
                 <p className="text-zinc-400 leading-relaxed font-light text-sm italic">
-                  "{product.description || "An essential silhouette designed for the modern visionary."}"
+                  "{product.description || "An essential silhouette designed for the modern visionary. Crafted with precision for the Netrutv lifestyle."}"
                 </p>
               </section>
 
@@ -174,14 +215,14 @@ export default function ProductDetails() {
                   <ShieldCheck size={18} className="text-[#d4af37] mt-1" />
                   <div>
                     <p className="text-[10px] uppercase text-white tracking-widest font-bold mb-1">Authentic</p>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-tighter">Verified Netrutv Piece</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-tighter">Verified Archive Piece</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4">
                   <Truck size={18} className="text-[#d4af37] mt-1" />
                   <div>
                     <p className="text-[10px] uppercase text-white tracking-widest font-bold mb-1">Shipping</p>
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-tighter">Complimentary Express</p>
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-tighter">Priority Global Dispatch</p>
                   </div>
                 </div>
               </div>

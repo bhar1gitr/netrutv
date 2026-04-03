@@ -4,10 +4,18 @@ import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { useCart } from "@/context/cart-context"
 import axios from "axios"
-import { Search, Box, AlertTriangle, X, ShoppingBag } from "lucide-react"
+import { Search, ShoppingBag, Star, Tag, Loader2 } from "lucide-react"
 
 const API_URL = "https://netrutv-server.onrender.com/api/products"
-const IMG_BASE_URL = "https://netrutv-server.onrender.com/"
+
+// Helper to calculate sale price
+const getSalePrice = (price, discount) => {
+  if (!discount) return price;
+  if (discount.discountType === 'percentage') {
+    return price - (price * discount.value / 100);
+  }
+  return price - discount.value;
+};
 
 export default function CollectionsPage() {
   const { addToCart } = useCart()
@@ -60,8 +68,11 @@ export default function CollectionsPage() {
       const normalizedActiveCat = activeCategory.toLowerCase().replace("-", "")
       const matchCategory = activeCategory === "All" || normalizedDataCat === normalizedActiveCat
       const matchSubCategory = activeSubCategory === "All" || item.sub === activeSubCategory
+      
+      const currentPrice = item.discount ? getSalePrice(item.price, item.discount) : item.price;
       const priceObj = priceFilters.find(p => p.label === priceRange)
-      const matchPrice = item.price >= (priceObj?.min || 0) && item.price <= (priceObj?.max || 100000)
+      const matchPrice = currentPrice >= (priceObj?.min || 0) && currentPrice <= (priceObj?.max || 100000)
+      
       return matchSearch && matchCategory && matchSubCategory && matchPrice
     })
   }, [dbProducts, searchQuery, activeCategory, activeSubCategory, priceRange])
@@ -129,19 +140,34 @@ function FilterRow({ label, active, options, onChange }) {
 
 function ProductCard({ product, addToCart }) {
   const [showSizes, setShowSizes] = useState(false);
-  const imageSrc = product.image.startsWith('http') ? product.image : `${IMG_BASE_URL}${product.image}`
-  const isSoldOut = product.totalStock <= 0
+  const isSoldOut = product.totalStock <= 0;
+  
+  // Sale Logic
+  const hasDiscount = !!product.discount;
+  const salePrice = getSalePrice(product.price, product.discount);
 
   return (
     <div className="group relative" onMouseLeave={() => setShowSizes(false)}>
       <Link href={`/product/${product._id}`}>
         <div className="relative aspect-[4/5] overflow-hidden bg-zinc-950 border border-zinc-900 shadow-2xl">
+          {/* Status Badges */}
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-            {isSoldOut && <span className="bg-zinc-900/90 text-zinc-500 text-[8px] px-3 py-1 rounded-full uppercase font-bold">Sold Out</span>}
+            {isSoldOut && (
+              <span className="bg-zinc-900/90 text-zinc-500 text-[8px] px-3 py-1 rounded-full uppercase font-bold tracking-widest">
+                Sold Out
+              </span>
+            )}
+            {!isSoldOut && hasDiscount && (
+              <span className="bg-[#d4af37] text-black text-[10px] px-3 py-1 rounded-sm uppercase font-black tracking-tighter shadow-xl flex items-center gap-1">
+                <Tag size={10} />
+                {product.discount.discountType === 'percentage' 
+                  ? `-${product.discount.value}%` 
+                  : `₹${product.discount.value} OFF`}
+              </span>
+            )}
           </div>
 
           <img 
-            // src={imageSrc} 
             src={product.image}
             alt={product.name} 
             className={`w-full h-full object-cover transition duration-1000 group-hover:scale-110 ${isSoldOut ? 'grayscale opacity-40' : 'group-hover:opacity-40'}`} 
@@ -152,7 +178,7 @@ function ProductCard({ product, addToCart }) {
               {!showSizes ? (
                 <button 
                   onClick={(e) => { e.preventDefault(); setShowSizes(true); }}
-                  className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] px-8 py-4 hover:bg-[#d4af37] transition-colors"
+                  className="bg-white text-black text-[10px] font-bold uppercase tracking-[0.2em] px-8 py-4 hover:bg-[#d4af37] transition-colors shadow-2xl"
                 >
                   Quick Add
                 </button>
@@ -166,7 +192,7 @@ function ProductCard({ product, addToCart }) {
                          disabled={stock <= 0}
                          onClick={(e) => {
                            e.preventDefault();
-                           addToCart({ ...product, selectedSize: size });
+                           addToCart({ ...product, selectedSize: size, price: salePrice }); // Pass sale price to cart
                            setShowSizes(false);
                          }}
                          className={`w-8 h-8 text-[9px] border flex items-center justify-center transition-all ${stock <= 0 ? 'opacity-20 cursor-not-allowed border-zinc-700' : 'border-zinc-500 hover:border-[#d4af37] hover:text-[#d4af37]'}`}
@@ -183,11 +209,29 @@ function ProductCard({ product, addToCart }) {
       </Link>
 
       <div className="mt-8 flex justify-between items-start px-2">
-        <div>
-          <h3 className="text-[10px] uppercase text-zinc-600 mb-1">{product.sub}</h3>
-          <h2 className={`text-lg font-bold uppercase italic ${isSoldOut ? 'text-zinc-600' : 'group-hover:text-[#d4af37]'}`}>{product.name}</h2>
+        <div className="flex-1">
+          <h3 className="text-[10px] uppercase text-zinc-600 mb-1 tracking-[0.2em]">{product.sub}</h3>
+          <h2 className={`text-lg font-bold uppercase italic transition-colors duration-500 ${isSoldOut ? 'text-zinc-600' : 'group-hover:text-[#d4af37]'}`}>
+            {product.name}
+          </h2>
         </div>
-        <p className={`text-xl font-light ${isSoldOut ? 'text-zinc-700 line-through' : 'text-[#d4af37]'}`}>₹{Number(product.price).toLocaleString()}</p>
+        
+        <div className="text-right">
+          {hasDiscount && !isSoldOut ? (
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-zinc-600 line-through tracking-tighter uppercase mb-0 font-light">
+                ₹{Number(product.price).toLocaleString()}
+              </span>
+              <span className="text-2xl font-bold text-[#d4af37] italic tracking-tighter">
+                ₹{Number(salePrice).toLocaleString()}
+              </span>
+            </div>
+          ) : (
+            <p className={`text-2xl font-light tracking-tighter ${isSoldOut ? 'text-zinc-700 line-through' : 'text-[#d4af37]'}`}>
+              ₹{Number(product.price).toLocaleString()}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )

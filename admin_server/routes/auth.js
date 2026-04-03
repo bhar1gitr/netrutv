@@ -43,4 +43,29 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// GET /api/auth/all-users
+router.get('/all-users', async (req, res) => {
+  try {
+    const users = await User.find().select('-password').sort({ createdAt: -1 }).lean();
+    const Product = require('../models/Product');
+
+    // For each user, find products where they've left a review
+    const usersWithReviews = await Promise.all(users.map(async (user) => {
+      const reviewedProducts = await Product.find(
+        { "reviews.user": user._id },
+        { name: 1, _id: 1 } // Only fetch name and id for performance
+      );
+      
+      return {
+        ...user,
+        reviewedProducts // This will be an array of {name, _id}
+      };
+    }));
+
+    res.json(usersWithReviews);
+  } catch (err) {
+    res.status(500).json({ msg: "Server Error" });
+  }
+});
+
 module.exports = router;

@@ -32,7 +32,12 @@ const productSchema = new mongoose.Schema({
   reviews: [reviewSchema],
   // Optional: Average rating for easier sorting/display
   rating: { type: Number, default: 0 },
-  numReviews: { type: Number, default: 0 }
+  numReviews: { type: Number, default: 0 },
+  discount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Discount',
+    default: null
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);
