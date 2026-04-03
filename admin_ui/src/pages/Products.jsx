@@ -130,7 +130,8 @@ const Products = () => {
                   <td className="px-4">
                     <div className="d-flex align-items-center">
                       <img 
-                        src={item.image?.startsWith('http') ? item.image : `${IMG_BASE_URL}${item.image}`} 
+                        // src={item.image?.startsWith('http') ? item.image : `${IMG_BASE_URL}${item.image}`} 
+                        src={item.image}
                         className="rounded-3 me-3 object-fit-cover bg-light border" 
                         style={{ width: '50px', height: '60px' }} 
                         alt="" 

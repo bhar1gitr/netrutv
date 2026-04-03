@@ -16,15 +16,14 @@ exports.createProduct = async (req, res) => {
       : { S: 0, M: 0, L: 0, XL: 0, XXL: 0 };
 
     const totalStock = Object.values(sizes).reduce(
-      (a, b) => a + Number(b),
-      0
+      (a, b) => a + Number(b), 0
     );
 
     const productData = {
       ...req.body,
       sizes,
       totalStock,
-      image: req.file ? `/uploads/${req.file.filename}` : ""
+      image: req.file ? req.file.path : "" // ✅ Cloudinary URL
     };
 
     const newProduct = await Product.create(productData);
@@ -46,8 +45,10 @@ exports.updateProduct = async (req, res) => {
     }
 
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = req.file.path; // ✅ Cloudinary URL
     }
+
+    console.log("Update Data:", req.file.path);
 
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
