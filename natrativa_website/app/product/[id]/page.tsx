@@ -81,7 +81,8 @@ export default function ProductDetails() {
           <div className="relative">
             <div className="border border-zinc-900 bg-zinc-950 aspect-[4/5] overflow-hidden">
               <img
-                src={imageSrc}
+                // src={imageSrc}
+                src={product.image}
                 alt={product.name}
                 className={`w-full h-full object-cover ${isSoldOut ? 'grayscale opacity-50' : ''}`}
               />

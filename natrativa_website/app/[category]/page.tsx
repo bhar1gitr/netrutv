@@ -83,7 +83,8 @@ function CategoryProductCard({ item, addToCart, baseUrl }) {
     <div className="group" onMouseLeave={() => setShowSizes(false)}>
       <div className="relative aspect-[3/4] bg-zinc-950 border border-zinc-900 overflow-hidden mb-4">
         <Link href={`/product/${item._id}`}>
-          <img src={imageSrc} alt={item.name} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isSoldOut ? 'opacity-20 grayscale' : 'opacity-80 group-hover:opacity-40'}`} />
+          <img src={item.image} alt={item.name} className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isSoldOut ? 'opacity-20 grayscale' : 'opacity-80 group-hover:opacity-40'}`} />
+
         </Link>
         
         {!isSoldOut && (

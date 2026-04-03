@@ -141,7 +141,8 @@ function ProductCard({ product, addToCart }) {
           </div>
 
           <img 
-            src={imageSrc} 
+            // src={imageSrc} 
+            src={product.image}
             alt={product.name} 
             className={`w-full h-full object-cover transition duration-1000 group-hover:scale-110 ${isSoldOut ? 'grayscale opacity-40' : 'group-hover:opacity-40'}`} 
           />
