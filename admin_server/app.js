@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const productRoutes = require('./routes/productRoutes');
@@ -8,7 +9,9 @@ const productRoutes = require('./routes/productRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+
+// Serve the uploads folder statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)

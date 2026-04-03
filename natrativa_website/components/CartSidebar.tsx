@@ -122,7 +122,6 @@
 
 
 
-
 "use client"
 
 import { useCart } from "@/context/cart-context"
@@ -133,17 +132,25 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
 
   const handleCheckout = () => {
     if (items.length === 0) return
+    
     const cartSummary = items
       .map((item) => {
         const p = String(item.price).replace(/[₹, ]/g, "")
         const lineTotal = (parseFloat(p) * item.quantity).toLocaleString('en-IN')
-        return `▪ ${item.name} (x${item.quantity}) - ₹${lineTotal}`
+        // Include SIZE and formatted line total
+        return `▪ ${item.name} [Size: ${item.size}] (x${item.quantity}) - ₹${lineTotal}`
       })
       .join("\n")
 
-    const message = `Greetings NETRUTV Concierge. I would like to finalize my collection:\n\n${cartSummary}\n\n*Total Value: ${total}*`
+    // Added netrutv.com to the message template
+    const message = `Greetings NETRUTV Concierge. I would like to finalize my collection from netrutv.com:\n\n${cartSummary}\n\n*Total Value: ${total}*\n\nSent via: https://netrutv.com`
+    
+    // Open WhatsApp with the updated message
     window.open(`https://wa.me/917039674351?text=${encodeURIComponent(message)}`, "_blank")
-    clearCart(); onClose();
+    
+    // Cleanup
+    clearCart()
+    onClose()
   }
 
   return (
@@ -154,17 +161,19 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
         <div className="flex flex-col h-full">
           <div className="p-6 border-b border-white/5 flex justify-between items-center">
             <h2 className="font-serif text-xl text-white">Collection</h2>
-            <button onClick={onClose} className="text-zinc-500 hover:text-white"><X size={20} /></button>
+            <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={20} /></button>
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             {items.length === 0 ? (
-              <p className="text-center text-zinc-600 mt-20 italic">Empty collection</p>
+              <div className="flex flex-col items-center justify-center h-40">
+                <p className="text-center text-zinc-600 italic">Empty collection</p>
+              </div>
             ) : (
               items.map((item) => (
-                <div key={item.id} className="flex gap-4 items-center">
+                <div key={item.id} className="flex gap-4 items-center animate-in fade-in slide-in-from-right-4 duration-300">
                   {/* Image Container */}
-                  <div className="w-16 h-20 bg-zinc-900 overflow-hidden border border-white/5">
+                  <div className="w-16 h-20 bg-zinc-900 overflow-hidden border border-white/5 flex-shrink-0">
                     <img 
                       src={item.image} 
                       alt={item.name} 
@@ -173,15 +182,25 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
                     />
                   </div>
 
-                  <div className="flex-1">
-                    <h3 className="text-[10px] uppercase tracking-widest text-zinc-300 font-bold">{item.name}</h3>
-                    <p className="text-[#d4af37] font-serif">{typeof item.price === 'number' ? `₹${item.price.toLocaleString()}` : item.price}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-[10px] uppercase tracking-widest text-zinc-300 font-bold truncate">{item.name}</h3>
+                      {/* SIZE BADGE */}
+                      <span className="ml-2 px-1.5 py-0.5 bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#d4af37] text-[8px] font-bold rounded">
+                        {item.size}
+                      </span>
+                    </div>
+                    <p className="text-[#d4af37] font-serif mt-0.5">
+                      {typeof item.price === 'number' ? `₹${item.price.toLocaleString('en-IN')}` : item.price}
+                    </p>
                     
-                    <div className="flex items-center gap-3 mt-2">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-zinc-500"><Minus size={12}/></button>
-                      <span className="text-xs text-white">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-zinc-500"><Plus size={12}/></button>
-                      <button onClick={() => removeFromCart(item.id)} className="ml-auto text-zinc-700 hover:text-red-500"><Trash2 size={14}/></button>
+                    <div className="flex items-center gap-3 mt-3">
+                      <div className="flex items-center gap-3 border border-white/5 px-2 py-1 rounded">
+                        <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-zinc-500 hover:text-white"><Minus size={10}/></button>
+                        <span className="text-[10px] text-white w-4 text-center">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-zinc-500 hover:text-white"><Plus size={10}/></button>
+                      </div>
+                      <button onClick={() => removeFromCart(item.id)} className="ml-auto text-zinc-700 hover:text-red-500 transition-colors"><Trash2 size={14}/></button>
                     </div>
                   </div>
                 </div>
@@ -191,11 +210,14 @@ export default function CartSidebar({ isOpen, onClose }: { isOpen: boolean; onCl
 
           {items.length > 0 && (
             <div className="p-6 bg-zinc-950 border-t border-white/5">
-              <div className="flex justify-between mb-4">
-                <span className="text-xs text-zinc-500 uppercase">Total</span>
+              <div className="flex justify-between mb-6">
+                <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Total Value</span>
                 <span className="text-[#d4af37] font-serif text-xl">{total}</span>
               </div>
-              <button onClick={handleCheckout} className="w-full bg-[#d4af37] text-black py-4 text-[10px] font-bold uppercase tracking-widest">
+              <button 
+                onClick={handleCheckout} 
+                className="w-full bg-[#d4af37] text-black py-4 text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-colors duration-300"
+              >
                 Contact Concierge
               </button>
             </div>

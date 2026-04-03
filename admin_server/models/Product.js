@@ -1,15 +1,24 @@
 const mongoose = require('mongoose');
 
-const productSchema = new mongoose.Schema({
-  pid: { type: String, required: true },
-  name: { type: String, required: true },
-  description: { type: String, default: "" }, // New Field
-  price: { type: Number, required: true },
-  type: { type: String, required: true },
-  sub: { type: String, required: true },
-  stock: { type: Number, default: 0 },       // New Field
-  image: { type: String, required: true },
-  modelUrl: { type: String, default: "" }
+const ProductSchema = new mongoose.Schema({
+  pid: String,
+  name: String,
+  price: Number,
+  type: String,
+  sub: String,
+  image: String,
+  description: String,
+  modelUrl: String,
+  // New Sizes Schema
+  sizes: {
+    S: { type: Number, default: 0 },
+    M: { type: Number, default: 0 },
+    L: { type: Number, default: 0 },
+    XL: { type: Number, default: 0 },
+    XXL: { type: Number, default: 0 }
+  },
+  // We can calculate total stock automatically
+  totalStock: { type: Number, default: 0 }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model('Product', ProductSchema);

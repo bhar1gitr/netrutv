@@ -100,18 +100,23 @@
 
 
 
+
+
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from "react"
 
 const BASE_URL = "https://netrutv-server.onrender.com";
+// const BASE_URL = "http://localhost:5000"
 
 interface CartItem {
-  id: string
+  id: string       
+  productId: string
   name: string
   price: any
   image: string
   quantity: number
+  size: string     
 }
 
 interface CartContextType {
@@ -128,7 +133,29 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [total, setTotal] = useState("₹0")
+  const [isLoaded, setIsLoaded] = useState(false) // Prevents hydration mismatch
 
+  // 1. Load cart from localStorage on initial mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem("netrutv_cart")
+    if (savedCart) {
+      try {
+        setItems(JSON.parse(savedCart))
+      } catch (error) {
+        console.error("Failed to parse cart:", error)
+      }
+    }
+    setIsLoaded(true)
+  }, [])
+
+  // 2. Save cart to localStorage whenever items change
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem("netrutv_cart", JSON.stringify(items))
+    }
+  }, [items, isLoaded])
+
+  // 3. Calculate total
   useEffect(() => {
     const subtotal = items.reduce((acc, item) => {
       const priceString = String(item.price || "0")
@@ -140,10 +167,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const addToCart = (product: any) => {
     setItems((prev) => {
-      const productId = product.id || product._id
-      const existing = prev.find((item) => item.id === productId)
+      const prodId = product._id || product.id
+      const selectedSize = product.selectedSize || "N/A"
+      const uniqueId = `${prodId}-${selectedSize}`
       
-      // Fix Image URL: If it's relative (/uploads/...), add the BASE_URL
+      const existing = prev.find((item) => item.id === uniqueId)
+      
       let imageUrl = product.image || "";
       if (imageUrl && !imageUrl.startsWith('http')) {
         imageUrl = `${BASE_URL}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
@@ -151,18 +180,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (existing) {
         return prev.map((item) =>
-          item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === uniqueId ? { ...item, quantity: item.quantity + 1 } : item
         )
       }
 
       return [
         ...prev,
         {
-          id: productId,
+          id: uniqueId,
+          productId: prodId,
           name: product.name,
           price: product.price,
-          image: imageUrl, // Storing the full valid URL
+          image: imageUrl,
           quantity: 1,
+          size: selectedSize,
         },
       ]
     })
@@ -175,11 +206,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.map((item) => (item.id === id ? { ...item, quantity } : item)))
   }
 
-  const clearCart = () => setItems([])
+  const clearCart = () => {
+    setItems([])
+    localStorage.removeItem("netrutv_cart")
+  }
 
   return (
     <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total }}>
-      {children}
+      {/* Only render children after checking localStorage to prevent UI flicker/mismatch */}
+      {isLoaded ? children : <div className="bg-black min-h-screen" />}
     </CartContext.Provider>
   )
 }
